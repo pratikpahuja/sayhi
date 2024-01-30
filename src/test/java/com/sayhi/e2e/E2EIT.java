@@ -2,14 +2,17 @@ package com.sayhi.e2e;
 
 import java.util.List;
 
+import com.sayhi.config.TestClockConfig;
 import com.sayhi.messaging.domain.Message;
 import com.sayhi.user.api.interfaces.CreateUserResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Clock;
@@ -21,10 +24,10 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.http.HttpMethod.GET;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+  , properties = "spring.datasource.url=jdbc:postgresql://localhost/sayhi_test_db")
 public class E2EIT {
   @Autowired TestRestTemplate restTemplate;
-  @Autowired Clock clock;
 
   @Test
   void createUserAndSendMessage() {
