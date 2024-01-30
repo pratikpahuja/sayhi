@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Say hi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input[type="text"] {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Simple Messaging System</h2>
+    <h3>Create User</h3>
+    <input type="text" id="username" placeholder="Enter Username">
+    <button onclick="createUser()">Create User</button>
+
+    <h3>Send Message</h3>
+    <input type="text" id="sender" placeholder="Sender">
+    <input type="text" id="receiver" placeholder="Receiver">
+    <input type="text" id="message" placeholder="Message">
+    <button onclick="sendMessage()">Send Message</button>
+
+    <h3>Get Sent Messages</h3>
+    <input type="text" id="sentUser" placeholder="Enter Username">
+    <button onclick="getSentMessages()">Get Sent Messages</button>
+    <div id="sentMessages" style="text-align: left"></div>
+
+    <h3>Get Received Messages</h3>
+    <input type="text" id="receivedUser" placeholder="Enter Username">
+    <button onclick="getReceivedMessages()">Get Received Messages</button>
+    <div id="receivedMessages" style="text-align: left"></div>
+
+    <h3>Get Messages Between Users</h3>
+    <input type="text" id="mainUser" placeholder="Main user">
+    <select id="transferType">
+        <option value="sent">Sent To</option>
+        <option value="received">Received From</option>
+    </select>
+    <input type="text" id="fellowUser" placeholder="Fellow user">
+    <button onclick="getMessagesBetweenUsers()">Get Messages</button>
+    <div id="messagesBetweenUsers" style="text-align: left"></div>
+</div>
+
+<script>
+    function createUser() {
+        const username = document.getElementById('username').value;
+        // Send a POST request to your backend API to create a user
+        // Example using fetch API:
+        fetch('/api/v1/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ nickName: username }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to create user');
+            }
+            return response.json(); // Parse the response body as JSON
+        })
+        .then(data => {
+            alert(`User "${username}" created successfully!\nResponse: ${JSON.stringify(data)}`);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to create user');
+        });
+    }
+
+    function sendMessage() {
+        const sender = document.getElementById('sender').value;
+        const receiver = document.getElementById('receiver').value;
+        const message = document.getElementById('message').value;
+        // Send a POST request to your backend API to send a message
+        // Example using fetch API:
+        fetch('api/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-user-id': sender
+            },
+            body: JSON.stringify({ receiverUserId: receiver, messageBody: message }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to send message');
+            }
+            alert(`Message sent successfully.`);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to send message.');
+        });
+    }
+
+    function getSentMessages() {
+        const user = document.getElementById('sentUser').value;
+        // Send a GET request to your backend API to retrieve sent messages
+        // Example using fetch API:
+        fetch(`/api/v1/messages?transfer_type=sent`, {
+            method: 'GET',
+            headers: {
+                'x-user-id': user
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayMessages('sentMessages', data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to retrieve sent messages');
+        });
+    }
+
+    function getReceivedMessages() {
+        const user = document.getElementById('receivedUser').value;
+        // Send a GET request to your backend API to retrieve sent messages
+        // Example using fetch API:
+        fetch(`/api/v1/messages?transfer_type=received`, {
+            method: 'GET',
+            headers: {
+                'x-user-id': user
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayMessages('receivedMessages', data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to retrieve received messages');
+        });
+    }
+
+    function getMessagesBetweenUsers() {
+        const mainUser = document.getElementById('mainUser').value;
+        const fellowUser = document.getElementById('fellowUser').value;
+        const transferType = document.getElementById('transferType').value;
+        // Send a GET request to your backend API to retrieve messages between users
+        // Example using fetch API:
+        fetch(`/api/v1/messages?transfer_type=${transferType}&fellow_user_id=${fellowUser}`, {
+            method: 'GET',
+            headers: {
+                'x-user-id': mainUser
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayMessages('messagesBetweenUsers', data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to retrieve messages between users');
+        });
+    }
+
+    function displayMessages(elementId, messagesArray) {
+        const element = document.getElementById(elementId);
+        element.innerHTML = '';
+        if (messagesArray.length === 0) {
+            element.innerHTML = 'No messages found.';
+        } else {
+            messagesArray.forEach(msg => {
+                element.innerHTML += `<p>${msg.sentAt}: ${msg.senderUserId} -> ${msg.receiverUserId}: ${msg.body}</p>`;
+            });
+        }
+    }
+</script>
+</body>
+</html>
