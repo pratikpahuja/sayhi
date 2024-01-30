@@ -18,4 +18,34 @@ http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
     <addAutoIncrement tableName="app_user" columnName="id" columnDataType="bigint" startWith="1" incrementBy="1" />
     <createSequence sequenceName="app_user_id_seq" incrementBy="1" startValue="1" />
   </changeSet>
+
+  <changeSet id="20240129130000" author="ppahuja">
+    <createTable tableName="message">
+      <column name="id" type="bigint">
+        <constraints primaryKey="true" primaryKeyName="pk_message_id" />
+      </column>
+      <column name="sender_user_id" type="bigint">
+        <constraints nullable="false" foreignKeyName="fk_message_sender_user_id_app_user" references="app_user(id)" />
+      </column>
+      <column name="receiver_user_id" type="bigint" >
+        <constraints nullable="false" foreignKeyName="fk_message_receiver_user_id_app_user" references="app_user(id)" />
+      </column>
+      <column name="body" type="text" >
+        <constraints nullable="false" />
+      </column>
+      <column name="sent_at" type="timestamp" >
+        <constraints nullable="false" />
+      </column>
+    </createTable>
+    <addAutoIncrement tableName="message" columnName="id" columnDataType="bigint" startWith="1" incrementBy="1" />
+    <createSequence sequenceName="message_id_seq" incrementBy="1" startValue="1" />
+
+    <createIndex tableName="message" indexName="idx_message_sender_receiver" unique="false">
+      <column name="sender_user_id" />
+      <column name="receiver_user_id" />
+    </createIndex>
+    <createIndex tableName="message" indexName="idx_message_receiver_user_id" unique="false">
+      <column name="receiver_user_id" />
+    </createIndex>
+  </changeSet>
 </databaseChangeLog>

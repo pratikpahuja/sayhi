@@ -1,5 +1,6 @@
 package com.sayhi.user.service;
 
+import com.sayhi.user.domain.AppUser;
 import com.sayhi.user.exception.UserAlreadyExistsException;
 import com.sayhi.user.repository.AppUserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,5 +46,27 @@ class UserServiceTest {
     when(mockUserRepository.findByNickName("test")).thenReturn(of(sampleUser(234L, "test")));
 
     assertThrows(UserAlreadyExistsException.class, () -> service.createUser(user));
+  }
+
+  @Test
+  void findUserIfNotPresent() {
+    when(mockUserRepository.findById(123L)).thenReturn(empty());
+
+    var actualUser = service.findUserById(123L);
+
+    verify(mockUserRepository).findById(123L);
+    assertThat(actualUser.isEmpty(), is(true));
+  }
+
+  @Test
+  void findUser() {
+    when(mockUserRepository.findById(123L)).thenReturn(of(sampleUser(123L, "test")));
+
+    var actualUser = service.findUserById(123L);
+
+    verify(mockUserRepository).findById(123L);
+    assertThat(actualUser.isPresent(), is(true));
+    assertThat(actualUser.get().getNickName(), is("test"));
+    assertThat(actualUser.get().getId(), is(123L));
   }
 }
