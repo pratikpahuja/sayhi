@@ -15,6 +15,7 @@
 - DLQ setup
 - Retries setup in queue
 - Actuator enable
+- More documentation for describing other possible endpoint responses
 
 ### Steps to run(`The steps have been tried on windows powershell and may require changes if executed on unix`)
 - Run command `docker-compose down`
