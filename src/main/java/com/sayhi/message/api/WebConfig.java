@@ -1,4 +1,4 @@
-package com.sayhi.messaging.api;
+package com.sayhi.message.api;
 
 import com.sayhi.exception.BadRequestException;
 import org.springframework.context.annotation.Configuration;

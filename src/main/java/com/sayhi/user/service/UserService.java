@@ -31,6 +31,10 @@ public class UserService {
     return repository.findById(userId);
   }
 
+  public Optional<AppUser> findUserByNickName(String nickName) {
+    return repository.findByNickName(nickName);
+  }
+
   private void checkNickNameUniqueness(AppUser user) {
     var userByNickName = repository.findByNickName(user.getNickName());
     if (userByNickName.isPresent()) {

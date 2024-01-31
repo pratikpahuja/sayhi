@@ -1,6 +1,6 @@
 package com.sayhi.fixtures;
 
-import com.sayhi.messaging.domain.Message;
+import com.sayhi.message.domain.Message;
 import com.sayhi.user.domain.AppUser;
 
 import java.time.Instant;

@@ -1,4 +1,4 @@
-package com.sayhi.messaging.api.interfaces;
+package com.sayhi.message.api.interfaces;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

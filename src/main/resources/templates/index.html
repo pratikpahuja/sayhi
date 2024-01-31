@@ -40,7 +40,12 @@
 </head>
 <body>
 <div class="container">
-    <h2>Simple Messaging System</h2>
+    <h2>Say hi</h2>
+    <h3>Get User</h3>
+    <input type="text" id="nickName" placeholder="Enter User nick name">
+    <button onclick="getUser()">Get User</button>
+    <div id="userDetails" style="text-align: left"></div>
+
     <h3>Create User</h3>
     <input type="text" id="username" placeholder="Enter Username">
     <button onclick="createUser()">Create User</button>
@@ -73,6 +78,31 @@
 </div>
 
 <script>
+    const handleErrors = response => {
+      if (!response.ok) {
+        alert(response.statusText);
+        throw Error(response.statusText);
+      }
+      return response;
+    }
+
+    function getUser() {
+        const nickName = document.getElementById('nickName').value;
+        // Send a GET request to your backend API to retrieve sent messages
+        // Example using fetch API:
+        fetch(`/api/v1/users/` + nickName, {
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('userDetails').innerHTML = ('userId: ' + data.id);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to retrieve user');
+        });
+    }
+
     function createUser() {
         const username = document.getElementById('username').value;
         // Send a POST request to your backend API to create a user

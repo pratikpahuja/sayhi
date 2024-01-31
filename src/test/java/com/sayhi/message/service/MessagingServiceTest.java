@@ -1,8 +1,10 @@
-package com.sayhi.messaging.service;
+package com.sayhi.message.service;
 
-import com.sayhi.messaging.repository.MessageRepository;
+import com.sayhi.message.exception.SameSenderReceiverException;
+import com.sayhi.message.repository.MessageRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.jms.core.JmsTemplate;
 
 import java.time.Instant;
 import java.util.List;
@@ -10,8 +12,8 @@ import java.util.Optional;
 
 import static com.sayhi.fixtures.MessageFixtures.sampleMessage;
 import static com.sayhi.fixtures.UserFixtures.sampleUser;
-import static com.sayhi.messaging.domain.MessageSentStatus.FAILED;
-import static com.sayhi.messaging.domain.MessageSentStatus.SUCCESS;
+import static com.sayhi.message.domain.MessageSentStatus.FAILED;
+import static com.sayhi.message.domain.MessageSentStatus.SUCCESS;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -22,22 +24,33 @@ class MessagingServiceTest {
 
   MessagingSevice service;
   private MessageRepository mockRepository;
+  private JmsTemplate mockJmsTemplate;
 
   @BeforeEach
   void setup() {
     mockRepository = mock(MessageRepository.class);
-    service = new MessagingSevice(mockRepository);
+    mockJmsTemplate = mock(JmsTemplate.class);
+    service = new MessagingSevice(mockJmsTemplate, mockRepository);
+  }
+
+  @Test
+  void sendMessageWhenSameSenderAndReceiver() {
+    var sender = sampleUser(213L, "nick-213");
+    var receiver = sampleUser(213L, "nick-213");
+    var message = sampleMessage(sender, receiver, Instant.now()).build();
+
+    assertThrows(SameSenderReceiverException.class, () -> service.sendMessage(message));
   }
 
   @Test
   void sendMessage() {
     var sender = sampleUser(213L, "nick-213");
     var receiver = sampleUser(513L, "nick-513");
-
     var message = sampleMessage(sender, receiver, Instant.now()).build();
+
     var status = service.sendMessage(message);
 
-    verify(mockRepository).save(message);
+    verify(mockJmsTemplate).convertAndSend("chatbox", message);
     assertThat(status, is(SUCCESS));
   }
 
@@ -45,12 +58,12 @@ class MessagingServiceTest {
   void sendMessageFailed() {
     var sender = sampleUser(213L, "nick-213");
     var receiver = sampleUser(513L, "nick-513");
-
     var message = sampleMessage(sender, receiver, Instant.now()).build();
-    when(mockRepository.save(message)).thenThrow(RuntimeException.class);
+    doThrow(RuntimeException.class).when(mockJmsTemplate).convertAndSend("chatbox", message);
+
     var status = service.sendMessage(message);
 
-    verify(mockRepository).save(message);
+    verify(mockJmsTemplate).convertAndSend("chatbox", message);
     assertThat(status, is(FAILED));
   }
 

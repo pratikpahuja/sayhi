@@ -1,6 +1,6 @@
-package com.sayhi.messaging.repository;
+package com.sayhi.message.repository;
 
-import com.sayhi.messaging.domain.Message;
+import com.sayhi.message.domain.Message;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;

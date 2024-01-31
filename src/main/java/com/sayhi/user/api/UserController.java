@@ -1,6 +1,7 @@
 package com.sayhi.user.api;
 
 import com.sayhi.exception.BadRequestException;
+import com.sayhi.exception.ResourceNotFoundException;
 import com.sayhi.exception.UnknownException;
 import com.sayhi.user.api.interfaces.CreateUserRequest;
 import com.sayhi.user.api.interfaces.CreateUserResponse;
@@ -11,10 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 import static java.util.stream.Collectors.joining;
@@ -39,6 +37,12 @@ public class UserController {
     } catch (Exception e) {
       throw new UnknownException(e);
     }
+  }
+
+  @GetMapping("/{nickName}")
+  public AppUser getUser(@PathVariable("nickName") String nickName) {
+    return userService.findUserByNickName(nickName)
+      .orElseThrow(() -> new ResourceNotFoundException(STR."No user exists for nickname: \{nickName}"));
   }
 
   private CreateUserResponse mapToResponse(AppUser createdUser) {

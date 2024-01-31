@@ -2,18 +2,13 @@ spring:
   liquibase:
     change-log: classpath:db/changelog.xml
 
-#  datasource:
-#    url: jdbc:h2:mem:sayhiDB
-#    username: user
-#    password: password
-#    driverClassName: org.h2.Driver
-#  jpa:
-#    database-platform: org.hibernate.dialect.H2Dialect
   datasource:
     url: jdbc:postgresql://localhost/sayhi_db
     username: postgres
     password: postgres
 
+  artemis:
+    mode: embedded
 server:
   error:
     include-message: always

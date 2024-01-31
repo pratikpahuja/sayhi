@@ -1,8 +1,9 @@
-package com.sayhi.messaging.api;
+package com.sayhi.message.api;
 
 import com.sayhi.config.TestClockConfig;
-import com.sayhi.messaging.domain.Message;
-import com.sayhi.messaging.service.MessagingSevice;
+import com.sayhi.message.domain.Message;
+import com.sayhi.message.exception.SameSenderReceiverException;
+import com.sayhi.message.service.MessagingSevice;
 import com.sayhi.user.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +15,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.Instant;
-import java.util.Optional;
 
 import static com.sayhi.fixtures.UserFixtures.sampleUser;
 import static java.util.Optional.of;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -30,6 +31,18 @@ class MessageControllerMVCTest {
   @Autowired MockMvc mvc;
   @MockBean MessagingSevice messagingSevice;
   @MockBean UserService userService;
+
+  @Test
+  void submitMessageWhenSameSenderReceiver() throws Exception {
+    var sender = sampleUser(123L, "user-sender");
+    var receiver = sampleUser(123L, "user-sender");
+    when(userService.findUserById(sender.getId())).thenReturn(of(sender));
+    when(userService.findUserById(receiver.getId())).thenReturn(of(receiver));
+    when(messagingSevice.sendMessage(any())).thenThrow(SameSenderReceiverException.class);
+
+    performSubmitMessage(sender.getId(), submitMessageRequestBody("msg", receiver.getId()))
+      .andExpect(status().isBadRequest());
+  }
 
   @Test
   void submitMessage() throws Exception {

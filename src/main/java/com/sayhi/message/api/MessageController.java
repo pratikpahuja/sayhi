@@ -1,12 +1,13 @@
-package com.sayhi.messaging.api;
+package com.sayhi.message.api;
 
 import com.sayhi.exception.BadRequestException;
 import com.sayhi.exception.ResourceNotFoundException;
 import com.sayhi.exception.UnknownException;
-import com.sayhi.messaging.api.interfaces.SubmitMessageRequest;
-import com.sayhi.messaging.domain.Message;
-import com.sayhi.messaging.domain.MessageSentStatus;
-import com.sayhi.messaging.service.MessagingSevice;
+import com.sayhi.message.api.interfaces.SubmitMessageRequest;
+import com.sayhi.message.domain.Message;
+import com.sayhi.message.domain.MessageSentStatus;
+import com.sayhi.message.exception.SameSenderReceiverException;
+import com.sayhi.message.service.MessagingSevice;
 import com.sayhi.user.domain.AppUser;
 import com.sayhi.user.service.UserService;
 import jakarta.validation.Valid;
@@ -44,6 +45,8 @@ public class MessageController {
 
       if (status == MessageSentStatus.FAILED)
         throw new UnknownException("Message sending failed");
+    } catch (SameSenderReceiverException e) {
+      throw new BadRequestException(e);
     } catch (Exception e) {
       throw new UnknownException(e);
     }
@@ -57,27 +60,32 @@ public class MessageController {
     var mainUser = getUserOrFail(userId);
 
     var messages = List.<Message>of();
-    if (fellowUserId.isPresent()) {
-      var fellowUser = getUserOrFail(fellowUserId.get());
 
-      if (transferType == MessageTransferType.SENT) {
-        //Sent from main to fellow user
-        messages = messagingSevice.getMessages(of(mainUser), of(fellowUser));
+    try {
+      if (fellowUserId.isPresent()) {
+        var fellowUser = getUserOrFail(fellowUserId.get());
+
+        if (transferType == MessageTransferType.SENT) {
+          //Sent from main to fellow user
+          messages = messagingSevice.getMessages(of(mainUser), of(fellowUser));
+        } else {
+          //Received by main from fellow user
+          messages = messagingSevice.getMessages(of(fellowUser), of(mainUser));
+        }
       } else {
-        //Received by main from fellow user
-        messages = messagingSevice.getMessages(of(fellowUser), of(mainUser));
+        //All sent messages
+        if (transferType == MessageTransferType.SENT) {
+          messages = messagingSevice.getMessages(of(mainUser), empty());
+        } else {
+          //All received messages
+          messages = messagingSevice.getMessages(empty(), of(mainUser));
+        }
       }
-    } else {
-      //All sent messages
-      if (transferType == MessageTransferType.SENT) {
-        messages = messagingSevice.getMessages(of(mainUser), empty());
-      } else {
-        //All received messages
-        messages = messagingSevice.getMessages(empty(), of(mainUser));
-      }
+    } catch (SameSenderReceiverException e) {
+      throw new BadRequestException(e);
     }
 
-    return messages;
+      return messages;
   }
 
   private Message toMessage(long senderUserId, SubmitMessageRequest request) {

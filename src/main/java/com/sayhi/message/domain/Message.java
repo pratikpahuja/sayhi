@@ -1,4 +1,4 @@
-package com.sayhi.messaging.domain;
+package com.sayhi.message.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

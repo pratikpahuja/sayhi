@@ -11,6 +11,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 import static com.sayhi.fixtures.UserFixtures.*;
 import static org.hamcrest.CoreMatchers.is;
@@ -26,7 +27,7 @@ class AppUserRepositoryTest {
   @Autowired JdbcTemplate jdbcTemplate;
 
   @BeforeEach
-  void setup() {
+  void setup() throws InterruptedException {
     truncateTable();
   }
 
@@ -87,7 +88,7 @@ class AppUserRepositoryTest {
     assertThat(expectedUser, is(actualUser.get()));
   }
 
-  void truncateTable() {
-    jdbcTemplate.execute("TRUNCATE TABLE app_user");
+  void truncateTable() throws InterruptedException {
+    jdbcTemplate.execute("TRUNCATE TABLE app_user CASCADE");
   }
 }
