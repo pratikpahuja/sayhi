@@ -1,5 +1,13 @@
 # Say Hi API
 
+Simple Messaging App
+### What it does
+- Create user
+- User can send message to another user
+- User can query all messages received and can also query messages received from another specific user
+- User can query all messages sent and can also query messages sent to another specific user
+- Messages are persisted in postgres
+
 ### Requirements
 - Java 21
 - Docker
